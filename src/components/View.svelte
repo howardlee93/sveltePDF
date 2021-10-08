@@ -4,6 +4,7 @@
     import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";  
     let canvasRef;
     export let pdfUrl;
+    export let typed;
 
     $:pdfUrl;
 
@@ -39,24 +40,23 @@
         });
     }
 
-    onMount(async()=>{
-        if(pdfUrl){
-            $:load(pdfUrl);
-        }else if (file.type == 'application/pdf'){
+    // onMount(async()=>{
+    //     if(pdfUrl){
+    //         $:load(pdfUrl);
+    //     }else if (file.type == 'application/pdf'){
 
-            convert(files)
-            $:load(files);
-        }
-    })
+    //         convert(files)
+    //         $:load(files);
+    //     }
+    // })
 
-//    $:load(pdfUrl);
+   $:load(typed);
  
 </script>
 
 
-{#if pdfUrl}
-    <p>View: {pdfUrl}</p>
-    {:else if file}
-    <p>View: {file}</p>
+{#if typed}
+    <!-- <p>View: {pdfUrl}</p> -->
+    <p> View: {typed}</p>
 {/if}
 <canvas bind:this={canvasRef} />
