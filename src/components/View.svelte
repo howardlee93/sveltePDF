@@ -1,12 +1,10 @@
 <script>
-    import { onMount } from "svelte";
     import * as pdfjsLib from "pdfjs-dist";
     import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";  
     let canvasRef;
-    export let pdfUrl;
+    // export let pdfUrl;
     export let typed;
-
-    $:pdfUrl;
+    let initialized = false;
 
     // const data = 'https://www.medicare.gov/Pubs/pdf/10050-medicare-and-you.pdf';
     // const data = './50-writing-tools.pdf';
@@ -15,12 +13,13 @@
     // The workerSrc property shall be specified.
     pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
+    let currentPage = 1; 
+    let numPages = 0;
+    let pdfRef; 
 
-    const load = async (pdfUrl) =>{
-        
-         pdfjsLib
-        .getDocument(pdfUrl).promise
-        .then(doc => doc.getPage(1))
+    const renderPages = (page)=>{
+        console.log(currentPage)
+        pdfRef && pdfRef.getPage(page)
         .then(page => {
             const scale = 1.5;
             const viewport = page.getViewport({ scale });
@@ -29,34 +28,47 @@
             var context = canvasRef.getContext('2d');
             canvasRef.height = viewport.height;
             canvasRef.width = viewport.width;
-
             // Render PDF page into canvas context
             var renderContext = {
                 canvasContext: context,
                 viewport: viewport
             };
-
             page.render(renderContext);
         });
     }
 
-    // onMount(async()=>{
-    //     if(pdfUrl){
-    //         $:load(pdfUrl);
-    //     }else if (file.type == 'application/pdf'){
+    const load = async (pdfUrl) =>{  
+        pdfRef = await pdfjsLib.getDocument(pdfUrl).promise
+        initialized = true;
+    };
 
-    //         convert(files)
-    //         $:load(files);
-    //     }
-    // })
+    $:if (typed){
+        load(typed)
+    };
 
-   $:load(typed);
- 
+    $: if(initialized) renderPages(currentPage);
+
+   
 </script>
 
+<style>
+	.center{
+        display:flex;
+        justify-content: center;
+    }
+</style>
 
 {#if typed}
-    <!-- <p>View: {pdfUrl}</p> -->
-    <p> View: {typed}</p>
-{/if}
 <canvas bind:this={canvasRef} />
+{/if}
+
+<div class="center">
+    <button on:click={()=>{ if(currentPage > 1){
+        currentPage -=1;
+        }}
+    }> Previous page</button>
+    <button on:click={()=>{if(currentPage < numPages){
+        currentPage +=1
+        }}
+    }>Next page</button>
+</div>
